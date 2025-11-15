@@ -1,0 +1,70 @@
+# ===============================================================
+# Default Profile
+# ===============================================================
+server:
+  port: 5000
+
+spring:
+  profiles:
+    active: dev # Default environment is development
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+# ===============================================================
+# Custom Application Properties
+# ===============================================================
+app:
+  jwt:
+    secret: "FoodDelivery2024$SuperSecretJWT@Key#WithNumbers123&SpecialChars!"
+    refresh-secret: "RefreshToken2024*SecureKey@WithMixedCase#789&ExtraLong$Characters"
+  cors:
+    allowed-origins: "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000"
+    allow-credentials: true
+  rate-limiting:
+    enabled: false
+    max-requests: 100
+    window-ms: 900000
+
+---
+
+# ===============================================================
+# Development Profile
+# ===============================================================
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/fooddb # Updated from DATABASE_URL
+    username: postgres # Updated from DATABASE_URL
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
+---
+
+# ===============================================================
+# Production Profile
+# ===============================================================
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  datasource:
+    url: ${DB_URL} # Use environment variables in production
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
