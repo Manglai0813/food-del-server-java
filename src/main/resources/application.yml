@@ -45,6 +45,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/fooddb # Updated from DATABASE_URL
     username: postgres # Updated from DATABASE_URL
+    password: 1234
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
