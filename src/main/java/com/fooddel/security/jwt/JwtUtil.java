@@ -4,12 +4,12 @@ import com.fooddel.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -91,17 +91,30 @@ public class JwtUtil {
         return claimsResolver.apply(claims);
     }
 
-    // トークンから全てのクレームを抽出
+    // トークンから全てのクレームを抽出（アクセストークン用）
     private Claims extractAllClaims(String token) {
-        // 注意：アクセストークンとリフレッシュトークンでキーが異なるため、
-        // 検証なしでクレームを抽出するのはリスクが伴う。
-        // 本来は、トークンの種類を判断して適切なキーで検証すべき。
-        // ここでは簡略化のため、アクセストークンのキーで試行する。
+        return extractAllClaims(token, getAccessSigningKey());
+    }
+
+    // トークンから全てのクレームを抽出（指定されたキーを使用）
+    private Claims extractAllClaims(String token, Key signingKey) {
         return Jwts.parserBuilder()
-                .setSigningKey(getAccessSigningKey())
+                .setSigningKey(signingKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    // リフレッシュトークンの検証
+    public Boolean validateRefreshToken(String refreshToken, UserDetails userDetails) {
+        try {
+            Claims claims = extractAllClaims(refreshToken, getRefreshSigningKey());
+            String username = claims.getSubject();
+            Date expiration = claims.getExpiration();
+            return (username.equals(userDetails.getUsername()) && !expiration.before(new Date()));
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     // トークンが期限切れかどうかをチェック
@@ -112,13 +125,13 @@ public class JwtUtil {
 
     // アクセストークン用の署名キーを生成
     private Key getAccessSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(this.accessSecret);
+        byte[] keyBytes = this.accessSecret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
     // リフレッシュトークン用の署名キーを生成
     private Key getRefreshSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(this.refreshSecret);
+        byte[] keyBytes = this.refreshSecret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

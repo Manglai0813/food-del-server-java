@@ -132,14 +132,30 @@ public class CartServiceImpl implements CartService {
         return cartRepository.save(cart);
     }
 
-    // カートを空にします。
+    // カートを空にします（予約を解除しません。注文作成時に使用されます）。
     @Override
     @Transactional
     public void clearCart(Integer userId) {
         Cart cart = getCartByUserId(userId);
+        // カート内のアイテムをクリア
+        // 注意：予約の解除は注文作成時またはclearCartWithReservationReleaseメソッドで行われます
+        cart.getCartItems().clear();
+        cartRepository.save(cart);
+    }
+
+    // カートを空にし、予約も解除します（ユーザーが手動でカートをクリアする場合に使用）。
+    @Transactional
+    public void clearCartWithReservationRelease(Integer userId) {
+        Cart cart = getCartByUserId(userId);
+
+        // カート内のアイテムの予約を解除
+        for (CartItem item : cart.getCartItems()) {
+            Food food = item.getFood();
+            food.setReserved(food.getReserved() - item.getQuantity());
+            foodRepository.save(food);
+        }
 
         // カート内のアイテムをクリア
-        // 注意：予約の解除は注文作成時に行われるため、ここでは不要
         cart.getCartItems().clear();
         cartRepository.save(cart);
     }

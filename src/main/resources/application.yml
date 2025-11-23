@@ -57,9 +57,9 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:postgresql://localhost:5432/fooddb # Updated from DATABASE_URL
-    username: postgres # Updated from DATABASE_URL
-    password: 1234 # Updated PostgreSQL password
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/fooddb} # 環境変数を使用、デフォルト値あり
+    username: ${DB_USERNAME:postgres} # 環境変数を使用、デフォルト値あり
+    password: ${DB_PASSWORD:1234} # 環境変数を使用、デフォルト値あり（本番環境では必ず環境変数を設定すること）
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10

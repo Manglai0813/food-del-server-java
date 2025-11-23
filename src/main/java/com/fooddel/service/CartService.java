@@ -20,6 +20,9 @@ public interface CartService {
     // カートから商品を削除します。
     Cart removeItemFromCart(Integer userId, Integer cartItemId);
 
-    // カートを空にします。
+    // カートを空にします（予約は解除しません。注文作成時に使用）。
     void clearCart(Integer userId);
+
+    // カートを空にし、予約も解除します（ユーザーが手動でカートをクリアする場合に使用）。
+    void clearCartWithReservationRelease(Integer userId);
 }

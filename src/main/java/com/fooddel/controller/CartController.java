@@ -94,13 +94,13 @@ public class CartController {
     }
 
     /**
-     * カートを空にします。
+     * カートを空にします（予約も解除されます）。
      * @param user 認証済みユーザー
      * @return 成功レスポンス
      */
     @DeleteMapping("/clear")
     public ResponseEntity<ApiResponse<Void>> clearCart(@AuthenticationPrincipal User user) {
-        cartService.clearCart(user.getId());
+        cartService.clearCartWithReservationRelease(user.getId());
         ApiResponse<Void> response = ApiResponse.success("カートを空にしました。");
         return ResponseEntity.ok(response);
     }

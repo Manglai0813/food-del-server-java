@@ -120,7 +120,7 @@ public class AuthController {
 
     /**
      * トークンリフレッシュエンドポイント
-     * 
+     *
      * @param refreshTokenRequest リフレッシュトークンを含むリクエスト
      * @return 新しいアクセストークンを含むレスポンス
      */
@@ -131,11 +131,15 @@ public class AuthController {
 
         return userService.findByRefreshToken(requestRefreshToken)
                 .map(user -> {
-                    // ここでリフレッシュトークンの有効期限チェックなども可能
-                    // JwtUtilにリフレッシュトークン検証メソッドを追加するのが望ましい
+                    // リフレッシュトークンの有効期限と整合性を検証
+                    if (!jwtUtil.validateRefreshToken(requestRefreshToken, user)) {
+                        throw new BusinessException(HttpStatus.FORBIDDEN, "INVALID_REFRESH_TOKEN",
+                                "リフレッシュトークンが無効または期限切れです。");
+                    }
 
+                    // 新しいアクセストークンを生成
                     String newAccessToken = jwtUtil.generateToken(user);
-                    AuthResponse authResponse = new AuthResponse(newAccessToken, requestRefreshToken); // 古いリフレッシュトークンをそのまま返す
+                    AuthResponse authResponse = new AuthResponse(newAccessToken, requestRefreshToken);
                     ApiResponse<AuthResponse> response = ApiResponse.success(authResponse, "トークンが正常に更新されました。");
                     return ResponseEntity.ok(response);
                 })
