@@ -50,7 +50,8 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public Cart addItemToCart(Integer userId, CartItemRequest cartItemRequest) {
         Cart cart = getCartByUserId(userId);
-        Food food = foodRepository.findById(cartItemRequest.getFoodId())
+        // 悲観的ロックで商品を取得（並行性制御）
+        Food food = foodRepository.findByIdWithLock(cartItemRequest.getFoodId())
                 .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "FOOD_NOT_FOUND", "指定された商品が見つかりません。"));
 
         // 在庫チェック (予約分も考慮)
@@ -97,7 +98,9 @@ public class CartServiceImpl implements CartService {
         int newQuantity = cartItemRequest.getQuantity();
         int diff = newQuantity - oldQuantity;
 
-        Food food = cartItem.getFood();
+        // 悲観的ロックで商品を取得（並行性制御）
+        Food food = foodRepository.findByIdWithLock(cartItem.getFood().getId())
+                .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "FOOD_NOT_FOUND", "指定された商品が見つかりません。"));
 
         // 増える場合のみ在庫チェック
         if (diff > 0) {
@@ -121,7 +124,10 @@ public class CartServiceImpl implements CartService {
         Cart cart = getCartByUserId(userId);
         CartItem cartItem = findCartItemInCart(cart, cartItemId);
 
-        Food food = cartItem.getFood();
+        // 悲観的ロックで商品を取得（並行性制御）
+        Food food = foodRepository.findByIdWithLock(cartItem.getFood().getId())
+                .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "FOOD_NOT_FOUND", "指定された商品が見つかりません。"));
+
         // 予約数を減らす
         food.setReserved(food.getReserved() - cartItem.getQuantity());
         foodRepository.save(food);
@@ -150,7 +156,9 @@ public class CartServiceImpl implements CartService {
 
         // カート内のアイテムの予約を解除
         for (CartItem item : cart.getCartItems()) {
-            Food food = item.getFood();
+            // 悲観的ロックで商品を取得（並行性制御）
+            Food food = foodRepository.findByIdWithLock(item.getFood().getId())
+                    .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "FOOD_NOT_FOUND", "指定された商品が見つかりません。"));
             food.setReserved(food.getReserved() - item.getQuantity());
             foodRepository.save(food);
         }
