@@ -6,6 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal; // BigDecimalをインポート
 import java.time.LocalDateTime;
 
 /**
@@ -33,7 +34,7 @@ public class OrderItem {
     private Integer quantity;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private Double price;
+    private BigDecimal price;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

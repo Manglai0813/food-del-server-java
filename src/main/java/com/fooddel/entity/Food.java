@@ -6,6 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal; // BigDecimalをインポート
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class Food {
     private String description;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private Double price;
+    private BigDecimal price;
 
     @Column(name = "image_path", nullable = false)
     private String imagePath;
@@ -63,10 +64,10 @@ public class Food {
     @JoinColumn(name = "category_id", nullable = false) // category_id は必須
     private Category category;
 
-    @OneToMany(mappedBy = "food", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "food", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
     private List<CartItem> cartItems;
 
-    @OneToMany(mappedBy = "food", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "food", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private List<OrderItem> orderItems;
 
     @OneToMany(mappedBy = "food", cascade = CascadeType.ALL, orphanRemoval = true)

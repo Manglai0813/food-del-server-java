@@ -7,6 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal; // BigDecimalをインポート
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class Order {
     private LocalDateTime orderDate;
 
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
-    private Double totalAmount;
+    private BigDecimal totalAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

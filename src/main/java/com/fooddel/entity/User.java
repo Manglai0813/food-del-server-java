@@ -6,19 +6,24 @@ import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * ユーザーエンティティ
  * PrismaスキーマからJPAエンティティへの変換
+ * Spring SecurityのUserDetailsを実装します。
  */
 @Entity
 @Table(name = "users")
 @Data
 @EntityListeners(AuditingEntityListener.class)
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,7 +53,45 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // リレーションシップ (関連エンティティが未作成のため、mappedByのみ定義)
+    @Column(name = "refresh_token", length = 512)
+    private String refreshToken;
+
+    // --- UserDetailsの実装 ---
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+
+    @Override
+    public String getUsername() {
+        // Spring Securityでは、usernameは一意の識別子を指します。この場合はメールアドレスです。
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; // アカウントの有効期限切れロジックは未実装
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; // アカウントのロックロジックは未実装
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; // 資格情報の有効期限切れロジックは未実装
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true; // アカウントの有効/無効ロジックは未実装
+    }
+
+
+    // --- リレーションシップ ---
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Cart cart;
 

@@ -11,11 +11,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * グローバル例外ハンドラー
  * 全てのコントローラーで発生した例外をここで一元的に処理します。
  */
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     /**
@@ -47,7 +50,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleAllExceptions(Exception ex) {
-        // TODO: Log the exception details for debugging
+        log.error("予期せぬエラーが発生しました", ex);
         ApiResponse<Object> errorResponse = ApiResponse.error("サーバー内部でエラーが発生しました", "INTERNAL_SERVER_ERROR");
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
